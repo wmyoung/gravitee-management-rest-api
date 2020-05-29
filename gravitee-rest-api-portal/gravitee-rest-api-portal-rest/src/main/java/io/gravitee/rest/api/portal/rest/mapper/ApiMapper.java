@@ -29,8 +29,8 @@ import io.gravitee.rest.api.portal.rest.model.RatingSummary;
 import io.gravitee.rest.api.portal.rest.model.User;
 import io.gravitee.rest.api.service.ParameterService;
 import io.gravitee.rest.api.service.RatingService;
-import io.gravitee.rest.api.service.ViewService;
-import io.gravitee.rest.api.service.exceptions.ViewNotFoundException;
+import io.gravitee.rest.api.service.CategoryService;
+import io.gravitee.rest.api.service.exceptions.CategoryNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -51,7 +51,7 @@ public class ApiMapper {
     private RatingService ratingService;
 
     @Autowired
-    private ViewService viewService;
+    private CategoryService categoryService;
 
     @Autowired
     private ParameterService parameterService;
@@ -107,19 +107,19 @@ public class ApiMapper {
 
         apiItem.setVersion(api.getVersion());
 
-        boolean isViewModeEnabled = this.parameterService.findAsBoolean(Key.PORTAL_APIS_VIEW_ENABLED)
-            && this.parameterService.findAsBoolean(Key.PORTAL_APIS_SHOW_VIEWS_IN_APIHEADER);
-        if (isViewModeEnabled && api.getViews() != null) {
-            apiItem.setViews(api.getViews().stream().filter(viewId -> {
+        boolean isCategoryModeEnabled = this.parameterService.findAsBoolean(Key.PORTAL_APIS_CATEGORY_ENABLED)
+            && this.parameterService.findAsBoolean(Key.PORTAL_APIS_SHOW_CATEGORIES_IN_APIHEADER);
+        if (isCategoryModeEnabled && api.getCategories() != null) {
+            apiItem.setCategories(api.getCategories().stream().filter(categoryId -> {
                 try {
-                    viewService.findNotHiddenById(viewId);
+                    categoryService.findNotHiddenById(categoryId);
                     return true;
-                } catch (ViewNotFoundException v) {
+                } catch (CategoryNotFoundException v) {
                     return false;
                 }
             }).collect(Collectors.toList()));
         } else {
-            apiItem.setViews(new ArrayList<>());
+            apiItem.setCategories(new ArrayList<>());
         }
 
         return apiItem;
